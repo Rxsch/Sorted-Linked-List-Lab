@@ -1,0 +1,133 @@
+#include <stdio.h>
+#include<stdlib.h>
+#include "leak_detector_c.h"
+
+typedef struct node
+{
+int data;
+struct node *next;
+} node;
+
+//Insert using recursion
+struct node* insert (struct node* list, int d){
+  if(list==NULL|| list->data >= d) //Base case
+  {
+node* newnode= (node*)malloc(sizeof(node));
+    newnode->data=d;
+    newnode->next = list;
+    return newnode;
+    }
+  
+    list->next=insert(list->next,d); //Recursion
+    return list;
+}
+
+//Delete Recursive Function
+struct node* del(struct node* list, int d) {
+    if (list == NULL) {
+        return list; // Return if list is empty
+    }
+    if (list->data == d) {
+        node* temp = list;
+        list = list->next; // Update the head of the list
+        free(temp); // Free the node being deleted
+        return list; // Return the updated list
+    }
+    list->next = del(list->next, d); // Recursive call to delete from the rest of the list
+    return list;
+}
+
+//Printing Recursive Function
+void print(struct node* list) {
+  if(list==NULL) //Base case
+  {
+    return list;
+  }
+  printf("->%d", list->data);
+  return print(list->next);
+}
+
+//Free list
+void freeList(struct node* list) {
+    if (list == NULL) {
+        return; // Base case: list is empty
+    }
+     freeList(list->next); // Recursively free the rest of the list
+  free(list); // Free the current node
+}
+//Copy list
+void copy(struct node *q, struct node **s) {
+    if (q == NULL) {
+        *s = NULL; // Base case: reached the end of the list
+        return;
+    }
+
+    // Allocate memory for the new node
+    *s = (node*)malloc(sizeof(node));
+    (*s)->data = q->data; // Copy the data
+    (*s)->next = NULL; // Initialize next to NULL
+
+    // Recursively copy the rest of the list
+    copy(q->next, &((*s)->next));
+}
+
+
+int main() { 
+atexit(report_mem_leak);
+  int number = 0, choice=0; 
+
+struct node *pList=NULL; 
+struct node *nList = NULL; 
+  
+  
+ // Let the user add values until they enter -1. 
+ 
+  while(choice!= 4) 
+ { 
+ //Options
+ printf("\nDo you want to (1)insert, (2)delete, (3)Copy (4)quit.\n");  scanf("%d", &choice); 
+ printf("Your choice is %d\n", choice); 
+ 
+   
+ if (choice == 1) 
+ { 
+ // Get the number. 
+ printf("Enter the value to insert\n"); 
+ scanf("%d", &number); 
+ pList = insert(pList, number); 
+ // Look at the list. 
+ printf("Items in linked list: "); 
+ print(pList); 
+ //printf("\n"); 
+ } 
+ else if (choice == 2) 
+ { // Get the number. 
+ printf("Enter the value to delete.\n"); 
+ scanf("%d", &number); 
+ pList = del(pList, number); 
+ // Look at the list.
+ printf("Items in linked list: "); 
+ print(pList); 
+ //printf("\n"); 
+ } 
+else if (choice == 3) 
+ { 
+ if (nList) 
+ freeList(nList); 
+ copy(pList, &nList); //passing reference of nList as it is not  returning anything 
+ // Look at the list. 
+ printf("Items in NEW linked list: "); 
+ print(nList); 
+ // printf("\n"); 
+ }
+ else
+{ 
+ break; 
+ } 
+ }
+ freeList(nList); 
+ freeList(pList); 
+ printf("\nBye..\n"); 
+ return 0; 
+}
+
